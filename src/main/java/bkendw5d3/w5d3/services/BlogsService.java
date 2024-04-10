@@ -1,66 +1,52 @@
-package epicode.u5d7hw.services;
+package bkendw5d3.w5d3.services;
 
-import epicode.u5d7hw.entities.Blogpost;
-import epicode.u5d7hw.exceptions.NotFoundException;
+import bkendw5d3.w5d3.PayLoad.BlogPostPayLoad;
+import bkendw5d3.w5d3.dao.BlogPostDAO;
+import bkendw5d3.w5d3.entities.Blogpost;
+import bkendw5d3.w5d3.exceptions.NotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
 public class BlogsService {
+    @Autowired
+    private BlogPostDAO bDAO;
 
-    private final List<Blogpost> blogs = new ArrayList<>();
+    @Autowired
+    private AuthorsService authorsService;
 
-    public Blogpost save(Blogpost blogpost) {
-        Random rndm = new Random();
-        blogpost.setId(rndm.nextInt());
-        blogpost.setCover("https://picsum.photos/200/300");
-        this.blogs.add(blogpost);
-        return blogpost;
+    public Page<Blogpost> findAll(int page, int size, String sortBy) {
+        if (size > 50) size = 50;
+        Pageable p = PageRequest.of(page, size, Sort.by(sortBy));
+        return bDAO.findAll(p);
     }
 
-    public List<Blogpost> getBlogs() {
-        return this.blogs;
+    public Blogpost save(BlogPostPayLoad newBlogpost) {
+        return bDAO.save(new Blogpost(newBlogpost.getCategory(), newBlogpost.getTitle(), newBlogpost.getCover(), newBlogpost.getContent(), newBlogpost.getReadingTime(), authorsService.findById(newBlogpost.getAuthor_id())));
     }
 
     public Blogpost findById(int id) {
-        Blogpost found = null;
-
-        for (Blogpost blogpost : blogs) {
-            if (blogpost.getId() == id)
-                found = blogpost;
-        }
-        if (found == null)
-            throw new NotFoundException(id);
-        return found;
+        return this.bDAO.findById(id).orElseThrow(()-> new NotFoundException(id));
     }
 
     public void findByIdAndDelete(int id) {
-        ListIterator<Blogpost> iterator = this.blogs.listIterator();
-
-        while (iterator.hasNext()) {
-            Blogpost currentBlog = iterator.next();
-            if (currentBlog.getId() == id) {
-                iterator.remove();
-            }
-        }
+        Blogpost found = this.findById(id);
+        this.bDAO.delete(found);
     }
 
-    public Blogpost findByIdAndUpdate(int id, Blogpost body) {
-        Blogpost found = null;
-
-        for (Blogpost currentBlog : blogs) {
-            if (currentBlog.getId() == id) {
-                found = currentBlog;
-                found.setCover(body.getCover());
-                found.setCategory(body.getCategory());
-                found.setContent(body.getCover());
-                found.setReadingTime(body.getReadingTime());
-                found.setId(id);
-            }
-        }
-        if (found == null)
-            throw new NotFoundException(id);
+    public Blogpost findByIdAndUpdate(int id, Blogpost newBlogPost) {
+        Blogpost found = this.findById(id);
+        found.setCover(newBlogPost.getCover());
+        found.setContent(newBlogPost.getContent());
+        found.setCategory(newBlogPost.getCategory());
+        found.setTitle(newBlogPost.getTitle());
+        found.setReadingTime(newBlogPost.getReadingTime());
         return found;
 
     }

@@ -1,19 +1,11 @@
-package epicode.u5d7hw.controllers;
+package bkendw5d3.w5d3.controllers;
 
-import epicode.u5d7hw.entities.Author;
-import epicode.u5d7hw.exceptions.NotFoundException;
-import epicode.u5d7hw.services.AuthorsService;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import bkendw5d3.w5d3.entities.Author;
+import bkendw5d3.w5d3.services.AuthorsService;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.List;
 
@@ -32,10 +24,13 @@ public class AuthorsController {
     }
 
     // 2. - GET http://localhost:3001/authors
-    @GetMapping("")
-    public List<Author> getAuthors() {
-        return authorsService.getAuthors();
+    @GetMapping
+    private Page<Author> getAllAuthors(@RequestParam(defaultValue = "0") int page,
+                                       @RequestParam(defaultValue = "10") int size,
+                                       @RequestParam(defaultValue = "id") String sortBy) {
+        return authorsService.getAuthors(page, size, sortBy);
     }
+
 
     // 3. - GET http://localhost:3001/authors/{id}
     @GetMapping("/{authorId}")
