@@ -4,6 +4,7 @@ import bkendw5d3.w5d3.PayLoad.BlogPostPayLoad;
 import bkendw5d3.w5d3.dao.BlogPostDAO;
 import bkendw5d3.w5d3.entities.Blogpost;
 import bkendw5d3.w5d3.exceptions.NotFoundException;
+import com.cloudinary.Cloudinary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +22,9 @@ public class BlogsService {
     @Autowired
     private AuthorsService authorsService;
 
+    @Autowired
+    private Cloudinary cloudinaryUploader;
+
     public Page<Blogpost> findAll(int page, int size, String sortBy) {
         if (size > 50) size = 50;
         Pageable p = PageRequest.of(page, size, Sort.by(sortBy));
@@ -28,7 +32,12 @@ public class BlogsService {
     }
 
     public Blogpost save(BlogPostPayLoad newBlogpost) {
-        return bDAO.save(new Blogpost(newBlogpost.getCategory(), newBlogpost.getTitle(), newBlogpost.getCover(), newBlogpost.getContent(), newBlogpost.getReadingTime(), authorsService.findById(newBlogpost.getAuthor_id())));
+        return bDAO.save(new Blogpost(newBlogpost.getCategory(),
+                newBlogpost.getTitle(),
+                newBlogpost.getCover(),
+                newBlogpost.getContent(),
+                newBlogpost.getReadingTime(),
+                authorsService.findById(newBlogpost.getAuthor_id())));
     }
 
     public Blogpost findById(int id) {

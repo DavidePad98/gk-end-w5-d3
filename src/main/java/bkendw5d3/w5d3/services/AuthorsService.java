@@ -1,30 +1,51 @@
 package bkendw5d3.w5d3.services;
 
+import bkendw5d3.w5d3.PayLoad.newAuthorDTO;
 import bkendw5d3.w5d3.dao.AuthorsDAO;
 import bkendw5d3.w5d3.entities.Author;
 import bkendw5d3.w5d3.exceptions.BadRequestException;
 import bkendw5d3.w5d3.exceptions.NotFoundException;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
 public class AuthorsService {
 
-@Autowired
-private AuthorsDAO aDAO;
+    @Autowired
+    private AuthorsDAO aDAO;
 
-    public Author save(Author author) {
-        if (!aDAO.existsByEmail(author.getEmail())) {
-            author.setAvatar("https://ui-avatars.com/api/?name=" + author.getName() + "+" + author.getSurname());
-            aDAO.save(author);
-            return author;
-        } else throw new BadRequestException("Email '" + author.getEmail() + "' is already taken.");
+    @Autowired
+    private Cloudinary cloudinaryUploader;
+
+    public Author save(newAuthorDTO author) {
+        this.aDAO.findByEmail(author.email()).ifPresent(
+                author1 -> {throw new BadRequestException("L'email " + author.email() + " è già in uso!");
+                }
+        );
+        Author newAuthor = new Author(
+                author.name(),
+                author.surname(),
+                author.email(),
+                author.dateOfBirth(),
+                "https://ui-avatars.com/api/?name=" + author.name() + "+" + author.surname());
+        return aDAO.save(newAuthor);
+
+//        return aDAO.save(new Author(
+//                author.name(),
+//                author.surname(),
+//                author.email(),
+//                author.dateOfBirth(),
+//                "https://ui-avatars.com/api/?name=" + author.name() + "+" + author.surname()));
     }
 
     public Page<Author> getAuthors(int page, int size, String sortBy) {
@@ -51,5 +72,10 @@ private AuthorsDAO aDAO;
         found.setDateOfBirth(newAuthor.getDateOfBirth());
         aDAO.save(found);
         return found;
+    }
+
+    public String uploadImage(MultipartFile image) throws IOException {
+        String url = (String) cloudinaryUploader.uploader().upload(image.getBytes(), ObjectUtils.emptyMap()).get("url");
+        return url;
     }
 }

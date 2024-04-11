@@ -1,12 +1,19 @@
 package bkendw5d3.w5d3.controllers;
 
+import bkendw5d3.w5d3.PayLoad.newAuthorDTO;
+import bkendw5d3.w5d3.PayLoad.newAuthorID;
 import bkendw5d3.w5d3.entities.Author;
+import bkendw5d3.w5d3.exceptions.BadRequestException;
 import bkendw5d3.w5d3.services.AuthorsService;
 import org.springframework.data.domain.Page;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -18,9 +25,12 @@ public class AuthorsController {
     // 1. - POST http://localhost:3001/authors (+ req.body)
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED) // <-- 201
-    public Author saveAuthor(@RequestBody Author body) throws Exception {
+    public newAuthorID saveAuthor(@RequestBody @Validated newAuthorDTO body, BindingResult validation) {
         System.out.println(body);
-        return authorsService.save(body);
+        if(validation.hasErrors()) {
+            throw new BadRequestException(validation.getAllErrors());
+        }
+        return new newAuthorID(this.authorsService.save(body).getId());
     }
 
     // 2. - GET http://localhost:3001/authors
@@ -49,5 +59,11 @@ public class AuthorsController {
     @ResponseStatus(HttpStatus.NO_CONTENT) // <-- 204 NO CONTENT
     public void findAndDelete(@PathVariable int authorId) {
         authorsService.findByIdAndDelete(authorId);
+    }
+
+    @PostMapping("/upload")
+    public String uploadAvatar(@RequestParam("avatar") MultipartFile image) throws IOException {
+        return this.authorsService.uploadImage(image);
+
     }
 }
