@@ -74,8 +74,16 @@ public class AuthorsService {
         return found;
     }
 
-    public String uploadImage(MultipartFile image) throws IOException {
+//    public String uploadImage(MultipartFile image) throws IOException {
+//        String url = (String) cloudinaryUploader.uploader().upload(image.getBytes(), ObjectUtils.emptyMap()).get("url");
+//        return url;
+//    }
+
+    public Author updateAuthorAvatar(int id, MultipartFile image) throws IOException{
+        Author found = this.findById(id);
         String url = (String) cloudinaryUploader.uploader().upload(image.getBytes(), ObjectUtils.emptyMap()).get("url");
-        return url;
+        found.setAvatar(url);
+        aDAO.save(found);
+        return found;
     }
 }

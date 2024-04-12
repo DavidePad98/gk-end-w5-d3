@@ -61,9 +61,15 @@ public class AuthorsController {
         authorsService.findByIdAndDelete(authorId);
     }
 
-    @PostMapping("/upload")
-    public String uploadAvatar(@RequestParam("avatar") MultipartFile image) throws IOException {
-        return this.authorsService.uploadImage(image);
+//    @PostMapping("/upload")
+//    public String uploadAvatar(@RequestParam("avatar") MultipartFile image) throws IOException {
+//        return this.authorsService.uploadImage(image);
+//
+//    }
 
+
+    @PostMapping("/{authorId}/updateAuthorAvatar")
+    private Author updateAuthorAvatar(@PathVariable int authorId, @RequestParam("avatar")MultipartFile image) throws IOException{
+        return authorsService.updateAuthorAvatar(authorId, image);
     }
 }
